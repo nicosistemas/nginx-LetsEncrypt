@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /home/ubuntuserver/nginx/certs:/etc/nginx/certs:ro
+      - /home/ubuntuserver/nginx/confd:/etc/nginx/conf.d
+      - /home/ubuntuserver/nginx/vhostd:/etc/nginx/vhost.d
+      - /home/ubuntuserver/nginx/www:/usr/share/nginx/html
+    labels:
+      - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy
+
+  letsencrypt:
+    image: duch/letsencrypt-nginx-proxy-companion:stable
+    restart: always
+    volumes:
+      - /home/ubuntuserver/nginx/certs:/etc/nginx/certs:rw
+      - /home/ubuntuserver/nginx/confd:/etc/nginx/conf.d
+      - /home/ubuntuserver/nginx/vhostd:/etc/nginx/vhost.d
+      - /home/ubuntuserver/nginx/www:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  nginx:
+    image: nginx
+    restart: always
+    expose:
+      - "80"
+    volumes:
+      - /home/ubuntuserver/nginx/www:/usr/share/nginx/html:ro
+    environment:
+      - VIRTUAL_HOST=nicosistemas.duckdns.org
+      - LETSENCRYPT_HOST=nicosistemas.duckdns.org
+      - LETSENCRYPT_EMAIL=nicosistemashey@gmail.com
